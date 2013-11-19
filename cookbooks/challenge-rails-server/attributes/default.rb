@@ -1,3 +1,5 @@
 default[:hostname] = node.fqdn
-default[:nginx][:username] = 'challenge'
-default[:nginx][:directory] = '/home/challenge/'
+default[:application][:username] = 'challenge'
+default[:application][:name] = 'challenge_rails'
+default[:application][:directory] = '/home/challenge'
+
