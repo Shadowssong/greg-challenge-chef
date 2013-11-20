@@ -1,12 +1,13 @@
 #
-# Cookbook Name:: ruby2.0-stable
+# Cookbook Name:: ruby-ubuntu
 # Recipe:: default
 #
 
 require 'chef/shell_out'
 
-ruby = "ruby-2.0-stable"
+ruby = "ruby-#{node[:ruby][:version]}-p#{node[:ruby][:patch]}"
 
+# Packages required for building ruby from source
 packages = ['build-essential', 'openssl', 'libreadline6', 'libreadline6-dev', 'curl', 'git-core', 'zlib1g', 'zlib1g-dev', 'libssl-dev', 'libyaml-dev', 'libsqlite3-dev', 'sqlite3', 'libxml2-dev', 'libxslt-dev', 'autoconf', 'libc6-dev', 'ncurses-dev', 'automake', 'libtool', 'bison', 'nodejs', 'subversion']
 
 execute "update system" do 
@@ -59,9 +60,10 @@ execute "ruby make install" do
   command "make install"
   creates "/usr/local/bin/ruby"
   action :run 
+  notifies :run, "execute[gem update]", :immediately
 end
 
 execute "gem update" do 
   command "sudo gem update --system"
-  action :run 
+  action :nothing
 end

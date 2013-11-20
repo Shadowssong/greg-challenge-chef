@@ -16,7 +16,6 @@ Cookbooks
 Requires:
 * Nginx-ubuntu
 * Ruby2.0-stable
-* Postgresql
 
 Attributes
 ==========

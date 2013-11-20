@@ -1,12 +1,6 @@
 #
 # Cookbook Name:: nginx-ubuntu
-# Recipe:: default
 #
-# Copyright 2013, YOUR_COMPANY_NAME
-#
-# All rights reserved - Do Not Redistribute
-#
-
 
 package "python-software-properties" do 
   action :install
@@ -15,12 +9,13 @@ end
 execute "add nginx ppa" do 
   command "sudo -s add-apt-repository ppa:nginx/stable"
   action :run 
+  notifies :run, "execute[update apt]", :immediately
   not_if "apt-cache policy | grep nginx"
 end
 
 execute "update apt" do 
   command "sudo apt-get update"
-  action :run
+  action :nothing
 end
 
 package "nginx" do 

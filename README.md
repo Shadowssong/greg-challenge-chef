@@ -18,8 +18,8 @@ Steps:
 
 4) Apply run list to the target node
 
-		Update run list for node_name inside of nodes/
-		`knife solo cook username@hostname -N node_name -V -i ~/.ssh/id_rsa`
+	Update run list for node_name inside of nodes/
+	`knife solo cook username@hostname -N node_name -V -i ~/.ssh/id_rsa`
 
 To clean:
 
