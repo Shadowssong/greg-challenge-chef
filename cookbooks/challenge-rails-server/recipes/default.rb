@@ -4,6 +4,14 @@
 
 # Install Ruby
 include_recipe 'ruby2.0-stable'
+
+# Install Rails
+execute "gem rails" do 
+  command "gem install rails"
+  action :run 
+  not_if "gem list | grep rails"
+end
+
 # Install Postgres
 include_recipe 'postgres'
 # Install Nginx

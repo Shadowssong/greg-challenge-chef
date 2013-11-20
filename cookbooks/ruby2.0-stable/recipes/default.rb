@@ -5,9 +5,7 @@
 
 require 'chef/shell_out'
 
-version = '1.9.3'
-patch = '429'
-ruby = "ruby-#{version}-p#{patch}"
+ruby = "ruby-2.0-stable"
 
 packages = ['build-essential', 'openssl', 'libreadline6', 'libreadline6-dev', 'curl', 'git-core', 'zlib1g', 'zlib1g-dev', 'libssl-dev', 'libyaml-dev', 'libsqlite3-dev', 'sqlite3', 'libxml2-dev', 'libxslt-dev', 'autoconf', 'libc6-dev', 'ncurses-dev', 'automake', 'libtool', 'bison', 'nodejs', 'subversion']
 
@@ -28,8 +26,7 @@ end
 
 execute "download ruby" do 
   cwd "/tmp/download"
-  # http://cache.ruby-lang.org/pub/ruby/ruby-2.0-stable.zip
-  command "wget ftp://ftp.ruby-lang.org/pub/ruby/1.9/#{ruby}.tar.gz"
+  command "wget http://cache.ruby-lang.org/pub/ruby/#{ruby}.tar.gz"
   creates "/tmp/download/#{ruby}.tar.gz"
   not_if { ::File.exists?("/tmp/download/#{ruby}.tar.gz")}
   action :run
@@ -68,10 +65,3 @@ execute "gem update" do
   command "sudo gem update --system"
   action :run 
 end
-
-execute "gem rails" do 
-  command "gem install rails"
-  action :run 
-  not_if "gem list | grep rails"
-end
-
