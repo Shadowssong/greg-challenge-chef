@@ -30,6 +30,9 @@ end
 
 # Configure Postgres (incl create DB)
 # TODO
+# sudo -u postgres createdb --locale=en_US.utf8 --owner=redmine --encoding=UTF8 --template=template0 redmine
+# sudo -u postgres psql postgres -c "ALTER ROLE postgres ENCRYPTED PASSWORD '';"
+# sudo -u postgres psql postgres -c "CREATE ROLE redmine LOGIN ENCRYPTED PASSWORD 'my_password' NOINHERIT VALID UNTIL 'infinity';"
 # CREATE ROLE redmine LOGIN ENCRYPTED PASSWORD 'my_password' NOINHERIT VALID UNTIL 'infinity';
 # CREATE DATABASE redmine WITH ENCODING='UTF8' OWNER=redmine;
 
