@@ -20,21 +20,27 @@ execute "gem rails" do
   not_if "gem list | grep rails"
 end
 
-# Install helpful operation tools
-packages = ['vim-nox','htop','sysstat','iftop','iotop']
+# Install some required packages and helpful operation tools
+packages = ['libmagickwand-dev', 'libpq-dev', 'vim-nox','htop','sysstat','iftop','iotop']
+
 packages.each do |pkg|
   package pkg do 
     action :install
   end
 end
 
-# Configure Postgres (incl create DB)
-# TODO
-# sudo -u postgres createdb --locale=en_US.utf8 --owner=redmine --encoding=UTF8 --template=template0 redmine
-# sudo -u postgres psql postgres -c "ALTER ROLE postgres ENCRYPTED PASSWORD '';"
-# sudo -u postgres psql postgres -c "CREATE ROLE redmine LOGIN ENCRYPTED PASSWORD 'my_password' NOINHERIT VALID UNTIL 'infinity';"
-# CREATE ROLE redmine LOGIN ENCRYPTED PASSWORD 'my_password' NOINHERIT VALID UNTIL 'infinity';
-# CREATE DATABASE redmine WITH ENCODING='UTF8' OWNER=redmine;
+# Configure Postgres 
+execute "create postgres user" do 
+  command "sudo -u postgres psql postgres -c \"CREATE ROLE redmine LOGIN ENCRYPTED PASSWORD 'my_password' NOINHERIT VALID UNTIL 'infinity';\""
+  action :run
+  not_if "sudo -u postgres psql postgres -c \"SELECT usename FROM pg_user WHERE usename = 'redmine';\" | grep redmine"
+end
+
+execute "create redmine db" do 
+  command "sudo -u postgres psql postgres -c \"CREATE DATABASE redmine WITH OWNER=redmine TEMPLATE=template0 ENCODING='UTF8' LC_COLLATE='en_US.UTF-8' LC_CTYPE='en_US.UTF-8';\""
+  action :run
+  not_if "sudo -u postgres psql postgres -c \"SELECT datname FROM pg_database WHERE datname = 'redmine';\" | grep redmine"
+end
 
 # Add application user and directories
 user "#{node.application.username}" do 
@@ -49,6 +55,21 @@ directory "#{node.application.directory}" do
   action :create
 end
 
+# Increase max file descriptors for nginx
+template "/etc/security/limits.d/nginx.conf" do 
+  source "nginx-limits.conf.erb"
+  owner "root" 
+  group "root"
+  mode "0644"
+  notifies :run, "execute[edit_pamd]", :immediately
+end
+
+execute "edit_pamd" do 
+  command "echo 'session required pam_limits.so # added' >> /etc/pam.d/su"
+  action :nothing
+  not_if  "grep 'session required pam_limits.so # added' /etc/pamd./su"
+end
+
 # Configure Nginx
 # Main config
 template "/etc/nginx/nginx.conf" do 
@@ -56,7 +77,7 @@ template "/etc/nginx/nginx.conf" do
   owner "root" 
   group "root"
   mode "0644"
-  notifies :reload, "service[nginx]", :immediately
+  notifies :restart, "service[nginx]", :immediately
 end
 
 # Site config for application 
@@ -65,14 +86,14 @@ template "/etc/nginx/sites-available/#{node.application.name}" do
   owner "root" 
   group "root"
   mode "0644"
-  notifies :reload, "service[nginx]", :immediately
+  notifies :restart, "service[nginx]", :immediately
 end
 
 execute "symlink nginx avail" do 
   command "ln -s /etc/nginx/sites-available/#{node.application.name} /etc/nginx/sites-enabled/#{node.application.name}"
   action :run
   not_if  { ::File.exists?("/etc/nginx/sites-enabled/#{node.application.name}")}
-  notifies :reload, "service[nginx]", :immediately
+  notifies :restart, "service[nginx]", :immediately
 end
 
 service "nginx" do

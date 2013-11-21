@@ -11,7 +11,7 @@ server {
   rewrite_log on;  
 
   location / {
-    proxy_pass http://<%= node.hostname %>;
+    proxy_pass http://<%= node.application.name %>;
     proxy_redirect off;
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;

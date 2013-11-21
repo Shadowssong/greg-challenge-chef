@@ -2,8 +2,10 @@ user <%= node.application.username %> <%= node.application.username %>;
 worker_processes 4;
 pid /run/nginx.pid;
 
+worker_rlimit_nofile 30000;
+
 events {
-  worker_connections 768;
+  worker_connections 7680;
   multi_accept on;
 }
 
