@@ -29,13 +29,6 @@ packages.each do |pkg|
   end
 end
 
-template "#{node.application.directory}/.pgpass" do
-  source "pgpass.erb"
-  owner "#{node.application.username}"
-  group "#{node.application.username}"
-  mode "0600"
-end
-
 # Configure Postgres
 execute "create postgres user" do
   command "sudo -u postgres psql postgres -c \"CREATE ROLE redmine LOGIN ENCRYPTED PASSWORD '#{node.database.password}' NOINHERIT VALID UNTIL 'infinity';\""
@@ -64,11 +57,20 @@ directory "#{node.application.directory}" do
 end
 
 directory "#{node.application.directory}/.ssh" do
+  owner "#{node.application.username}"
+  group "#{node.application.username}"
   action :create
 end
 
 template "#{node.application.directory}/.ssh/authorized_keys" do
   source "authorized_keys.erb"
+  owner "#{node.application.username}"
+  group "#{node.application.username}"
+  mode "0600"
+end
+
+template "#{node.application.directory}/.pgpass" do
+  source "pgpass.erb"
   owner "#{node.application.username}"
   group "#{node.application.username}"
   mode "0600"
