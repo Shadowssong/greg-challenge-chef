@@ -19,12 +19,13 @@ Steps:
 
 4) Update your public key in `cookbooks/challenge-rails-server/templates/default/authorized_keys.erb`
 
-5) Update run list for node_name inside of `nodes/`
+5) Update the run list for the node_name inside of `nodes/` to show:
+
+    `{"run_list":["recipe[challenge-rails-server]"]}`
 
 6) Apply run list to the target node
 
 	`knife solo cook username@hostname -N node_name -V -i ~/.ssh/identityfile`
 
-To clean:
-
-    `knife solo clean username@hostname`
+The server will now be configured for the capistrano deployment of greg-challenge-rails:
+https://github.com/Shadowssong/greg-challenge-rails
