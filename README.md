@@ -12,14 +12,18 @@ Steps:
 
     `git clone https://github.com/Shadowssong/greg-challenge-chef.git`
 
+
 3) Install chef on the the target node  
 
     `knife solo prepare username@hostname -i ~/.ssh/identityfile`
 
-4) Apply run list to the target node
+4) Update your public key in `cookbooks/challenge-rails-server/templates/default/authorized_keys.erb`
 
-	Update run list for node_name inside of nodes/
-	`knife solo cook username@hostname -N node_name -V -i ~/.ssh/id_rsa`
+5) Update run list for node_name inside of `nodes/`
+
+6) Apply run list to the target node
+
+	`knife solo cook username@hostname -N node_name -V -i ~/.ssh/identityfile`
 
 To clean:
 

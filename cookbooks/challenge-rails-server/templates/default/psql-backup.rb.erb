@@ -1,1 +1,18 @@
-# placeholder
+# Short script to backup redmine psql db
+
+require 'fileutils'
+
+time = Time.now.strftime("%Y%m%d")
+puts "[#{Time.now}] Beginning backup of redmine database"
+backup_dir = "<%= node.backup.directory %>/backup-#{time}"
+pgpass_dir = "<%= node.application.directory %>/.pgpass"
+
+FileUtils.mkdir_p(backup_dir)
+
+begin
+  `export PGPASSFILE=/home/challenge/.pgpass; pg_dump -Fp -h localhost -U redmine redmine | gzip > #{backup_dir}/redmine-backup.sql.gz.in_progress`
+  `mv #{backup_dir}/redmine-backup.sql.gz.in_progress #{backup_dir}/redmine-backup.sql.gz`
+  puts "[#{Time.now}] Backup complete"
+rescue => e
+  puts "[#{Time.now}] Backup failed: #{e.message}"
+end
