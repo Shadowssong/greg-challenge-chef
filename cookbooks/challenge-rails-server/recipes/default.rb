@@ -47,7 +47,6 @@ user "#{node.application.username}" do
   action :create
   home "#{node.application.directory}"
   shell "/bin/bash"
-  # password "$6$CFsLLsPG$IRvctAilG1wcCrWdErLcr.HKf7M0HG5Kn/f1.q6oYVynIPrZB94pF.qzN3SziowfcGkQy4tvgk0FQt7PjZ7ot0"
 end
 
 directory "#{node.application.directory}" do

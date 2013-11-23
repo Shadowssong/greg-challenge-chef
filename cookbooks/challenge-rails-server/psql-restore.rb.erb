@@ -1,0 +1,61 @@
+host = "<%= node.application.name %>@<%= node.ipaddress %>"
+# Check for most recent backup
+time = Time.now
+iterator = 0
+filename = "" # make it accessible outside of the loop
+puts "[#{Time.now}] - Searching for most recent backup on #{host}"
+
+while(1)
+  filename = File.join("<%= node.backup.directory %>", time.strftime("backup-%Y%m%d"), "redmine-backup.sql.gz")
+  result = `ssh #{host} 'ls #{filename}'`
+  # file doesn't exist, lets move back 1 day
+  if result.empty?
+    time = Time.now - (86400 * interator)
+    iterator += 1
+    next
+  else
+    break
+  end
+end
+
+# Prompt for restore 
+while(1)
+  puts "[#{Time.now}] - Most recent backup found for #{time.strftime("%Y-%m-%d")}, use this backup? (y/n)"
+  response = gets.strip
+  if response.lower_case == 'y'
+    break
+  elsif response.lower_case == 'n'
+    exit
+  else
+    puts "[#{Time.now}] - Sorry your response #{response} is invalid"
+    next
+  end
+end
+
+puts "[#{Time.now}] - Restoring backup from #{time.strftime("%Y-%m-%d")}..."
+puts "[#{Time.now}] - Checking if local postgresql has necessary user and database..."
+
+# Check user
+psql_user = `sudo -u postgres psql postgres -c \"SELECT usename FROM pg_user WHERE usename = 'redmine';\" | grep redmine`
+if psql_user == 'something'
+  puts "[#{Time.now}] - redmine user does not exist, creating..."
+  `sudo -u postgres psql postgres -c \"CREATE ROLE redmine LOGIN ENCRYPTED PASSWORD '#{node.database.password}' NOINHERIT VALID UNTIL 'infinity';\"`
+else
+  puts "[#{Time.now}] - redmine user exists"
+end
+
+# Check database
+psql_db = `sudo -u postgres psql postgres -c \"SELECT datname FROM pg_database WHERE datname = 'redmine';\" | grep redmine`
+if psql_db == 'something'
+  puts "[#{Time.now}] - redmine database does not exist, creating..."
+  `sudo -u postgres psql postgres -c \"CREATE DATABASE redmine WITH OWNER=redmine TEMPLATE=template0 ENCODING='UTF8' LC_COLLATE='en_US.UTF-8' LC_CTYPE='en_US.UTF-8';\"`
+else
+  puts "[#{Time.now}] - redmine database exists"
+end
+
+# SCP file locally
+puts "[#{Time.now}] - Downloading backup from #{host}..."
+
+#
+# gzip
+# psql restore
